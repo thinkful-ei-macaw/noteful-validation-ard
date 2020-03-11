@@ -1,46 +1,55 @@
-import React, {Component} from 'react';
-import {Route, Link} from 'react-router-dom';
-import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
+import React, { Component } from 'react';
+import { Route, Link } from 'react-router-dom';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import NoteListNav from '../NoteListNav/NoteListNav';
 import NotePageNav from '../NotePageNav/NotePageNav';
 import NoteListMain from '../NoteListMain/NoteListMain';
 import NotePageMain from '../NotePageMain/NotePageMain';
 import dummyStore from '../dummy-store';
-import {getNotesForFolder, findNote, findFolder} from '../notes-helpers';
+import { getNotesForFolder, findNote, findFolder } from '../notes-helpers';
 import './App.css';
 import NotefulContext from './NotefulContext';
 
 class App extends Component {
     state = {
         notes: [
-            {
-                "id": "cbc787a0-ffaf-11e8-8eb2-f2801f1b9fd1",
-                "name": "Dogs",
-                "modified": "2019-01-03T00:00:00.000Z",
-                "folderId": "b0715efe-ffaf-11e8-8eb2-f2801f1b9fd1",
-                "content": "Corporis accusamus placeat quas non voluptas. Harum fugit molestias qui. Velit ex animi reiciendis quasi. Suscipit totam delectus ut voluptas aut qui rerum. Non veniam eius molestiae rerum quam.\n \rUnde qui aperiam praesentium alias. Aut temporibus id quidem recusandae voluptatem ut eum. Consequatur asperiores et in quisquam corporis maxime dolorem soluta. Et officiis id est quia sunt qui iste reiciendis saepe. Ut aut doloribus minus non nisi vel corporis. Veritatis mollitia et molestias voluptas neque aspernatur reprehenderit.\n \rMaxime aut reprehenderit mollitia quia eos sit fugiat exercitationem. Minima dolore soluta. Quidem fuga ut sit voluptas nihil sunt aliquam dignissimos. Ex autem nemo quisquam voluptas consequuntur et necessitatibus minima velit. Consequatur quia quis tempora minima. Aut qui dolor et dignissimos ut repellat quas ad."
-                }
         ],
         folders: []
     };
 
     componentDidMount() {
         fetch('http://localhost:9090/folders')
-        .then(response => response.json())
-        .then(data => {
-            this.setState.folders = { data }
-        })
+            .then(response => response.json())
+            .then(data => {
+                this.setState({
+                    "folders": data
+                })
+            })
 
         fetch('http://localhost:9090/notes')
-        .then(response => response.json())
-        .then(data => {
-            this.setState.notes = { data }
-        })
+            .then(response => response.json())
+            .then(data => {
+                this.setState({
+                    "notes": data
+                })
+            })
     }
+    handleDelete = (noteId) => {
+        console.log('delete')
+        fetch(`http://localhost:9090/notes/${noteId}`, {
+            method: 'DELETE',
+            headers: {
+                'content-type': 'application/json'
+            },
+        })
+        this.setState({
+            notes: this.state.notes.filter(note => note.id !== noteId)
+        });
+    };
 
     renderNavRoutes() {
-        const {notes, folders} = this.state;
-        const contextValue = {note: this.state.notes, folders: this.state.folders}
+        const { notes, folders } = this.state;
+        const contextValue = { notes: this.state.notes, folders: this.state.folders, handleDelete: this.handleDelete }
         return (
             <NotefulContext.Provider value={contextValue}>
                 {['/', '/folder/:folderId'].map(path => (
@@ -51,10 +60,8 @@ class App extends Component {
                         // pass these through context:
 
                         render={routeProps => (
-                                <NoteListNav
-                                    folders={folders}
-                                    notes={notes}
-                                {   ...routeProps}
+                            <NoteListNav
+                                {...routeProps}
                             />
                         )}
                     />
@@ -62,7 +69,7 @@ class App extends Component {
                 <Route
                     path="/note/:noteId"
                     render={routeProps => {
-                        const {noteId} = routeProps.match.params;
+                        const { noteId } = routeProps.match.params;
                         const note = findNote(notes, noteId) || {};
                         const folder = findFolder(folders, note.folderId);
                         return <NotePageNav {...routeProps} folder={folder} />;
@@ -75,8 +82,8 @@ class App extends Component {
     }
 
     renderMainRoutes() {
-        const {notes, folders} = this.state;
-        const contextValue = {note: this.notes, folders: this.folders}
+        const { notes, folders } = this.state;
+        const contextValue = { note: this.state.notes, folders: this.state.folders, handleDelete: this.handleDelete }
 
         return (
             <NotefulContext.Provider value={contextValue}>
@@ -86,7 +93,7 @@ class App extends Component {
                         key={path}
                         path={path}
                         render={routeProps => {
-                            const {folderId} = routeProps.match.params;
+                            const { folderId } = routeProps.match.params;
                             const notesForFolder = getNotesForFolder(
                                 notes,
                                 folderId
@@ -103,7 +110,7 @@ class App extends Component {
                 <Route
                     path="/note/:noteId"
                     render={routeProps => {
-                        const {noteId} = routeProps.match.params;
+                        const { noteId } = routeProps.match.params;
                         const note = findNote(notes, noteId);
                         return <NotePageMain {...routeProps} note={note} />;
                     }}

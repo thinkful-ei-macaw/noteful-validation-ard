@@ -6,23 +6,22 @@ import { countNotesForFolder } from '../notes-helpers'
 import './NoteListNav.css'
 import NotefulContext from '../App/NotefulContext'
 
-export default function NoteListNav(props) {
+export default function NoteListNav() {
   return (
     <NotefulContext.Consumer>
       {function renderProp(value) {
-        console.log(value);
-        
-        return(
+
+        return (
           <div className='NoteListNav'>
             <ul className='NoteListNav__list'>
-              {props.folders.map(folder =>
+              {value.folders.map(folder =>
                 <li key={folder.id}>
                   <NavLink
                     className='NoteListNav__folder-link'
                     to={`/folder/${folder.id}`}
                   >
                     <span className='NoteListNav__num-notes'>
-                      {countNotesForFolder(props.notes, folder.id)}
+                      {countNotesForFolder(value.notes, folder.id)}
                     </span>
                     {folder.name}
                   </NavLink>
