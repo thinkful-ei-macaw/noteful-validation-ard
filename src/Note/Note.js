@@ -7,6 +7,7 @@ import NotefulContext from '../App/NotefulContext'
 
 class Note extends React.Component {
   static contextType = NotefulContext;
+
   render() {
     return (
       <div className='Note' >
@@ -35,4 +36,5 @@ class Note extends React.Component {
     )
   }
 }
+
 export default Note;

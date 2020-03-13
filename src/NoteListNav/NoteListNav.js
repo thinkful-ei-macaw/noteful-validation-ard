@@ -10,7 +10,8 @@ export default function NoteListNav() {
   return (
     <NotefulContext.Consumer>
       {function renderProp(value) {
-
+        console.log(value);
+        
         return (
           <div className='NoteListNav'>
             <ul className='NoteListNav__list'>
